@@ -216,3 +216,175 @@ Description of cell 3
 
 Description of what is excecuted in this cell 3
 Brief analysis of shown figures.
+
+``` python
+# Transfer Function:
+
+from scipy import signal
+import math
+
+fs = len(time)/time[len(time)-1] # sampling frequency
+print(fs)
+nfft = len(time) # length of the FFT used
+
+fxx, Sxx = signal.csd(av, av, fs, 'hann', None, None, nfft)
+
+# 3rd Floor
+
+fyy3, Syy3 = signal.csd(story_3, story_3, fs, 'hann', None, None, nfft)
+fxy3, Sxy3 = signal.csd(av, story_3, fs, 'hann', None, None, nfft)
+
+H1_abs3 = abs(Sxy3/Sxx)
+H2_abs3 = abs(Syy3/Sxy3)
+
+Hv_abs_nfcn3 = H1_abs3*H2_abs3
+
+fig, ax=plt.subplots(1, figsize=(9.5,5))
+ax.plot(fxy3, Hv_abs_nfcn3)
+plt.show()
+
+# 2nd Floor
+
+fyy2, Syy2 = signal.csd(story_2, story_2, fs, 'hann', None, None, nfft)
+fxy2, Sxy2 = signal.csd(av, story_2, fs, 'hann', None, None, nfft)
+
+H1_abs2 = abs(Sxy2/Sxx)
+H2_abs2 = abs(Syy2/Sxy2)
+
+Hv_abs_nfcn2 = H1_abs2*H2_abs2
+
+fig, ax=plt.subplots(1, figsize=(9.5,5))
+ax.plot(fxy2, Hv_abs_nfcn2)
+plt.show()
+
+# 1st Floor
+
+fyy1, Syy1 = signal.csd(story_1, story_1, fs, 'hann', None, None, nfft)
+fxy1, Sxy1 = signal.csd(av, story_1, fs, 'hann', None, None, nfft)
+
+H1_abs1 = abs(Sxy1/Sxx)
+H2_abs1 = abs(Syy1/Sxy1)
+
+Hv_abs_nfcn1 = H1_abs1*H2_abs1
+
+fig, ax=plt.subplots(1, figsize=(9.5,5))
+ax.plot(fxy1, Hv_abs_nfcn1)
+plt.show()
+
+```
+Description of cell 4
+
+Description of what is excecuted in this cell 4
+Description of system Identification process. What does signal.csd implement? Regression analyisis - Supervised ML
+
+``` phyton
+# CSD Outputs
+
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 22}
+
+plt.rc('font', **font)
+
+fig, ax=plt.subplots(1, figsize=(9.5,5))
+ax.plot(fxy3[0:2000:1], Hv_abs_nfcn3[0:2000:1])
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel('Acceleration (g^2/Hz)')
+ax.set_title('Third Story CSD')
+plt.show()
+
+fig, ax=plt.subplots(1, figsize=(9.5,5))
+ax.plot(fxy3[0:2000:1], Hv_abs_nfcn2[0:2000:1])
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel('Acceleration (g^2/Hz)')
+ax.set_title('Second Story CSD')
+plt.show()
+
+fig, ax=plt.subplots(1, figsize=(9.5,5))
+ax.plot(fxy3[0:2000:1], Hv_abs_nfcn1[0:2000:1])
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel('Acceleration (g^2/Hz)')
+ax.set_title('First Story CSD')
+plt.show()
+```
+Description of cell 5
+
+Description of what is excecuted in this cell 5
+Analysis of obtained results.
+
+``` python
+from scipy.signal import argrelextrema
+from scipy import interpolate
+
+# update if structure has more than 3 stories
+
+max3index = argrelextrema(Hv_abs_nfcn3[0:2000:1], np.greater)
+max2index = argrelextrema(Hv_abs_nfcn2[0:2000:1], np.greater)
+max1index = argrelextrema(Hv_abs_nfcn1[0:2000:1], np.greater)
+
+floor1disp = [0,0,0]
+floor2disp = [0,0,0]
+floor3disp = [0,0,0]
+
+for i in [0,1,2]:
+    if Sxy1[max1index[0][i]]/Sxx[max1index[0][i]] < 0 or Syy1[max1index[0][i]]/Sxy1[max1index[0][i]] < 0:
+        floor1disp[i] = -Hv_abs_nfcn1[max1index[0][i]]/fxy1[max1index[0][i]]**4
+    else:
+        floor1disp[i] = Hv_abs_nfcn1[max1index[0][i]]/fxy1[max1index[0][i]]**4
+        
+    if Sxy2[max2index[0][i]]/Sxx[max2index[0][i]] < 0 or Syy2[max2index[0][i]]/Sxy2[max2index[0][i]] < 0:
+        floor2disp[i] = -Hv_abs_nfcn2[max2index[0][i]]/fxy2[max2index[0][i]]**4
+    else:
+        floor2disp[i] = Hv_abs_nfcn2[max2index[0][i]]//fxy2[max2index[0][i]]**4
+        
+    if Sxy3[max3index[0][i]]/Sxx[max3index[0][i]] < 0 or Syy3[max3index[0][i]]/Sxy3[max3index[0][i]] < 0:
+        floor3disp[i] = -Hv_abs_nfcn3[max3index[0][i]]/fxy3[max3index[0][i]]**4
+    else:
+        floor3disp[i] = Hv_abs_nfcn3[max3index[0][i]]/fxy3[max3index[0][i]]**4
+
+mode1 = [0,floor1disp[0],floor2disp[0],floor3disp[0]]/max([abs(floor1disp[0]),abs(floor2disp[0]),abs(floor3disp[0])])
+mode2 = [0,floor1disp[1],floor2disp[1],floor3disp[1]]/max([abs(floor1disp[1]),abs(floor2disp[1]),abs(floor3disp[1])])
+mode3 = [0,floor1disp[2],floor2disp[2],floor3disp[2]]/max([abs(floor1disp[2]),abs(floor2disp[2]),abs(floor3disp[2])])
+story = [0,1,2,3]
+
+story_spline = np.linspace(0, 3, 300)
+m1_Spline = interpolate.make_interp_spline(story, mode1)
+mode1_spline = m1_Spline(story_spline)
+m2_Spline = interpolate.make_interp_spline(story, mode2)
+mode2_spline = m2_Spline(story_spline)
+m3_Spline = interpolate.make_interp_spline(story, mode3)
+mode3_spline = m3_Spline(story_spline)
+
+fig, ax=plt.subplots(1, figsize=(3,5))
+ax.plot(mode1, story)
+ax.set_xlabel('Modal Displacement')
+ax.set_ylabel('Story')
+ax.set_title('Mode 1 Shape')
+plt.show()
+
+fig, ax=plt.subplots(1, figsize=(3,5))
+ax.plot(mode2, story)
+ax.set_xlabel('Modal Displacement')
+ax.set_ylabel('Story')
+ax.set_title('Mode 2 Shape')
+plt.show()
+
+fig, ax=plt.subplots(1, figsize=(3,5))
+ax.plot(mode3, story)
+ax.set_xlabel('Modal Displacement')
+ax.set_ylabel('Story')
+ax.set_title('Mode 3 Shape')
+plt.show()
+
+fig, ax=plt.subplots(1, figsize=(8,10))
+ax.plot(mode1, story, mode2, story, mode3, story)
+ax.set_xlabel('Modal Displacement')
+ax.set_ylabel('Story')
+ax.set_title('Modal Shapes')
+ax.legend(['Mode 1', 'Mode 2', 'Mode 3'])
+plt.show()
+```
+Description of cell 6
+
+Description of what is excecuted in this cell 6
+Description of general procedure for n dofs. So far, the program is written to compute vibration modes for 3 dofs. This function needs to be generalized.
