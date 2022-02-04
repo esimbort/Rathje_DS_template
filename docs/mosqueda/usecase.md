@@ -1,10 +1,12 @@
-# TITLE for Use Case Documentation Page
+# Seismic Response of Base Isolated Buildings Considering Pounding to Moat Walls
 
-**Authors, Affiliations**  
+**Gilberto Mosqueda, University of California, San Diego**  
+
+Summary about Jupiter Notebook goal. Introduction about test. System identification part. Obtained results.
 
 Introductory Text.  High-level overview of product. A condimentum vitae sapien pellentesque habitant morbi tristique.
 
-## Background 
+## HYBRID SHAKE TABLE FORMULATION 
 
 ### Citation and Licensing
 
@@ -87,3 +89,17 @@ def bubble_sort(items):
             if items[j] > items[j + 1]:
                 items[j], items[j + 1] = items[j + 1], items[j]
 ```
+
+from IPython.utils import io
+def myfunc():
+    # Install a pip package in the current Jupyter kernel
+    import sys
+    !{sys.executable} -m pip install --user ipyfilechooser
+with io.capture_output() as captured:
+    myfunc()
+    
+from ipyfilechooser import FileChooser
+
+# Create and display a FileChooser widget
+fc = FileChooser('/home/jupyter/NEES/NEES-2008-0571.groups/Experiment-8')
+#display(fc)
