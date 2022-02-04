@@ -90,7 +90,9 @@ def bubble_sort(items):
                 items[j], items[j + 1] = items[j + 1], items[j]
 ```
 
+``` python
 from IPython.utils import io
+
 def myfunc():
     # Install a pip package in the current Jupyter kernel
     import sys
@@ -100,6 +102,6 @@ with io.capture_output() as captured:
     
 from ipyfilechooser import FileChooser
 
-# Create and display a FileChooser widget
 fc = FileChooser('/home/jupyter/NEES/NEES-2008-0571.groups/Experiment-8')
 #display(fc)
+```
